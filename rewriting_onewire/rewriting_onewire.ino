@@ -22,6 +22,11 @@ uint8_t DS2438_address2[] = { 0x26, 0x69, 0xDD, 0xD6, 0x01, 0x00, 0x00, 0x25 }; 
 uint8_t DS2438_address3[] = { 0x26, 0x6D, 0xDD, 0xD6, 0x01, 0x00, 0x00, 0xF9 };       //device #3
 
 
+//set up ADC voltage channels
+#define V_AD 1
+#define V_DD 0
+
+
 void setup(void) {
   Serial.begin(9600);  // local hardware test only, for Spark set to 57600, for conventional set to 9600
 
@@ -36,7 +41,7 @@ void loop(void) {
   byte data_T[12];
   byte data_V[12];
   byte addr[8];
-  float celsius, fahrenheit, voltage;
+  float celsius, fahrenheit, voltage, voltage2;
 
   oneWire.reset();
   oneWire.select(DS2438_address2);      // Just do one at a time for testing
@@ -111,8 +116,6 @@ void loop(void) {
 
 
 
-//change to test push
-
 
   oneWire.reset();
   oneWire.select(DS2438_address2);      // Just do one at a time for testing
@@ -180,7 +183,64 @@ void loop(void) {
   Serial.print(voltage);
   Serial.println();
 
+
+  voltage2 = MeasADC(DS2438_address2, V_AD);
+
+  Serial.println();
+  Serial.print("  Data V2 = ");
+  Serial.print("  Voltage2 = ");
+  Serial.print(voltage2);
+  Serial.println();
+
 }
+
+
+float MeasADC(uint8_t address[8], int source)
+{
+  int n, a[9]; 
+  float v;
+  
+  oneWire.reset();
+  oneWire.select(address);  
+  oneWire.write( 0x4e, 0);   // write scratchpad
+  oneWire.write( 0x00, 0);   // setup for Vdd or A/D
+  if (source == V_AD)
+  {
+      oneWire.write( 0x00, 0);  // Vad
+  }
+  else
+  {
+      oneWire.write( 0x08, 0);  // Vdd
+  }     
+
+  oneWire.reset();
+  oneWire.select(address);  
+  oneWire.write( 0xb4, 0);  // perform A/D
+  delay(1000);  // wait for A/D to complete
+
+  oneWire.reset();  //reset
+  oneWire.select(address);  
+  oneWire.write( 0xb8, 0);   //recall memory
+  oneWire.write( 0x00, 0);  // recall to scratchpad  
+
+  oneWire.reset();
+  oneWire.select(address);  
+  oneWire.write( 0xbe, 0);  //reac scratchpad
+  oneWire.write( 0x00, 0);  // read scratchpad
+  
+  for (n=0; n<9; n++)
+  {
+      a[n] = oneWire.read(); 
+       //Serial.print(a[n]);
+       //Serial.print("...?n");
+       //delay(100);
+  }  
+       
+  v = a[4] * 256 + a[3];    
+  v = v / 100;
+  return(v); 
+}
+
 
 
 /*
