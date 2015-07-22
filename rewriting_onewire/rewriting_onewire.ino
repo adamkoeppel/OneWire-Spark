@@ -43,6 +43,7 @@ void loop(void) {
   byte addr[8];
   float celsius, fahrenheit, voltage, voltage2, temperature2;
 
+/*
   oneWire.reset();
   oneWire.select(DS2438_address2);      // Just do one at a time for testing
 
@@ -113,6 +114,7 @@ void loop(void) {
   Serial.print(fahrenheit);
   Serial.println(" Fahrenheit");
   Serial.println();
+*/
 
   temperature2 = MeasTemperature_2438(DS2438_address2);
 
@@ -122,7 +124,7 @@ void loop(void) {
   Serial.print(temperature2);
   Serial.println();
 
-
+/*
   oneWire.reset();
   oneWire.select(DS2438_address2);      // Just do one at a time for testing
 
@@ -188,7 +190,7 @@ void loop(void) {
   Serial.print("  Voltage = ");
   Serial.print(voltage);
   Serial.println();
-
+*/
 
   voltage2 = MeasADC(DS2438_address2, V_AD);
 
@@ -219,6 +221,8 @@ float MeasADC(uint8_t address[8], int source)
       oneWire.write( 0x08, 0);  // Vdd
   }     
 
+  delay(1000);     // maybe 750ms
+  
   oneWire.reset();
   oneWire.select(address);  
   oneWire.write( 0xb4, 0);  // perform A/D
@@ -252,6 +256,12 @@ float MeasTemperature_2438(uint8_t address[8])
      int data_T[12], i;
      int type_s = 2;
      float t;
+
+  oneWire.reset();
+  oneWire.select(address);      // Just do one at a time for testing
+  oneWire.write(0x44);        // start conversion, with parasite power on at the end
+  
+  delay(1000);     // maybe 750ms
       
   oneWire.reset();
   oneWire.select(address);    
