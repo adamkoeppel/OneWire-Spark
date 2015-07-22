@@ -111,7 +111,6 @@ float MeasADC(uint8_t address[8], int source)
 float MeasTemperature_2438(uint8_t address[8]) 
 {
   int data_T[12], i;
-  int type_s = 2;
   float t;
 
   oneWire.reset();
@@ -140,28 +139,10 @@ float MeasTemperature_2438(uint8_t address[8])
   // be stored to an "int16_t" type, which is always 16 bits
   // even when compiled on a 32 bit processor.
   int16_t raw = (data_T[1] << 8) | data_T[0];
-  if (type_s) {
-    if (type_s==1) {    // DS18S20
-      raw = raw << 3; // 9 bit resolution default
-      if (data_T[7] == 0x10) {
-        // "count remain" gives full 12 bit resolution
-        raw = (raw & 0xFFF0) + 12 - data_T[6];
-      }
-      t = (float)raw / 16.0;
-    }else{ // type_s==2 for DS2438
-      if (data_T[2] > 127) data_T[2]=0;
-      data_T[1] = data_T[1] >> 3;
-      t = (float)data_T[2] + ((float)data_T[1] * .03125);
-    }
-  } else {  // DS18B20 and DS1822
-    byte cfg = (data_T[4] & 0x60);
-    // at lower res, the low bits are undefined, so let's zero them
-    if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
-    else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
-    else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
-    //// default is 12 bit resolution, 750 ms conversion time
-    t = (float)raw / 16.0;
-  }
+  if (data_T[2] > 127) data_T[2]=0;
+  data_T[1] = data_T[1] >> 3;
+  t = (float)data_T[2] + ((float)data_T[1] * .03125);
+    
   return(t);
 }
 
