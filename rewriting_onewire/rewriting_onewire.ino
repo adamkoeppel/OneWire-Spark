@@ -41,7 +41,7 @@ void loop(void) {
   byte data_T[12];
   byte data_V[12];
   byte addr[8];
-  float celsius, fahrenheit, voltage, voltage2;
+  float celsius, fahrenheit, voltage, voltage2, temperature2;
 
   oneWire.reset();
   oneWire.select(DS2438_address2);      // Just do one at a time for testing
@@ -114,7 +114,13 @@ void loop(void) {
   Serial.println(" Fahrenheit");
   Serial.println();
 
+  temperature2 = MeasTemperature_2438(DS2438_address2);
 
+  Serial.println();
+  Serial.print("  Data T2 = ");
+  Serial.print("  Temperature2 = ");
+  Serial.print(temperature2);
+  Serial.println();
 
 
   oneWire.reset();
@@ -241,48 +247,25 @@ float MeasADC(uint8_t address[8], int source)
   return(v); 
 }
 
-
-
-/*
-//function to read temperature from a DS2438
-float readTemp(uint8_t address[8]){
-  byte data_T[12];
-  byte i;
-  byte type_s = 2;
-  float celsius, fahrenheit;
-
+float MeasTemperature_2438(uint8_t address[8]) 
+{
+     int data_T[12], i;
+     int type_s = 2;
+     float t;
+      
   oneWire.reset();
-  delay(10);
   oneWire.select(address);    
-  delay(10);
-  oneWire.write(0x44);        // start conversion, with parasite power on at the end
-  
-  delay(1000);     // maybe 750ms is enough, maybe not, I'm shooting for 1 reading per second
-
-  oneWire.reset();
-  delay(10);
-  oneWire.select(address);    
-  delay(10);
   oneWire.write(0xB8,0);         // Recall Memory 0
-  delay(10);
   oneWire.write(0x00,0);         // Recall Memory 0
-  delay(10);
 
   oneWire.reset();
-  delay(10);
   oneWire.select(address);    
-  delay(10);
   oneWire.write(0xBE, 0);         // Read Scratchpad 0
-  delay(10);
   oneWire.write(0x00,0);         // Recall Memory 0
-  delay(10);
 
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
     data_T[i] = oneWire.read();
-    
   }
-  Serial.print(data_T[i], HEX);
-    oneWire.reset();
   
   // Convert the data to actual temperature
   // because the result is a 16 bit signed integer, it should
@@ -296,11 +279,11 @@ float readTemp(uint8_t address[8]){
         // "count remain" gives full 12 bit resolution
         raw = (raw & 0xFFF0) + 12 - data_T[6];
       }
-      celsius = (float)raw / 16.0;
+      t = (float)raw / 16.0;
     }else{ // type_s==2 for DS2438
       if (data_T[2] > 127) data_T[2]=0;
       data_T[1] = data_T[1] >> 3;
-      celsius = (float)data_T[2] + ((float)data_T[1] * .03125);
+      t = (float)data_T[2] + ((float)data_T[1] * .03125);
     }
   } else {  // DS18B20 and DS1822
     byte cfg = (data_T[4] & 0x60);
@@ -309,9 +292,8 @@ float readTemp(uint8_t address[8]){
     else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
     else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
     //// default is 12 bit resolution, 750 ms conversion time
-    celsius = (float)raw / 16.0;   
-    return celsius;
+    t = (float)raw / 16.0;
   }
+  return(t);
 }
-*/
 
