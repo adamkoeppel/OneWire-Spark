@@ -27,22 +27,20 @@ uint8_t DS2438_address3[] = { 0x26, 0x6D, 0xDD, 0xD6, 0x01, 0x00, 0x00, 0xF9 }; 
 #define V_DD 0
 
 
-void setup(void) {
+void setup(void) 
+{
   Serial.begin(9600);  // local hardware test only, for Spark set to 57600, for conventional set to 9600
-
-//put valve configuration here
-
-
 }
 
-void loop(void) {
+void loop(void) 
+{
+
   byte i;
   byte type_s = 2;
   byte data_T[12];
   byte data_V[12];
   byte addr[8];
-  float celsius, fahrenheit, voltage, voltage2, temperature2;
-
+  float voltage2, temperature2;
 
 
   temperature2 = MeasTemperature_2438(DS2438_address2);
@@ -63,7 +61,7 @@ void loop(void) {
 
 }
 
-
+//function to measure the two voltage channels of the DS2438
 float MeasADC(uint8_t address[8], int source)
 {
   int n, a[9]; 
@@ -75,11 +73,11 @@ float MeasADC(uint8_t address[8], int source)
   oneWire.write( 0x00, 0);   // setup for Vdd or A/D
   if (source == V_AD)
   {
-      oneWire.write( 0x00, 0);  // Vad
+    oneWire.write( 0x00, 0);  // Vad
   }
   else
   {
-      oneWire.write( 0x08, 0);  // Vdd
+    oneWire.write( 0x08, 0);  // Vdd
   }     
 
   delay(1000);     // maybe 750ms
@@ -101,10 +99,7 @@ float MeasADC(uint8_t address[8], int source)
   
   for (n=0; n<9; n++)
   {
-      a[n] = oneWire.read(); 
-       //Serial.print(a[n]);
-       //Serial.print("...?n");
-       //delay(100);
+    a[n] = oneWire.read(); 
   }  
        
   v = a[4] * 256 + a[3];    
@@ -112,11 +107,12 @@ float MeasADC(uint8_t address[8], int source)
   return(v); 
 }
 
+//function to measure the temperature of the DS2438
 float MeasTemperature_2438(uint8_t address[8]) 
 {
-     int data_T[12], i;
-     int type_s = 2;
-     float t;
+  int data_T[12], i;
+  int type_s = 2;
+  float t;
 
   oneWire.reset();
   oneWire.select(address);      // Just do one at a time for testing
@@ -134,7 +130,8 @@ float MeasTemperature_2438(uint8_t address[8])
   oneWire.write(0xBE, 0);         // Read Scratchpad 0
   oneWire.write(0x00,0);         // Recall Memory 0
 
-  for ( i = 0; i < 9; i++) {           // we need 9 bytes
+  for ( i = 0; i < 9; i++)      // we need 9 bytes
+  {           
     data_T[i] = oneWire.read();
   }
   
